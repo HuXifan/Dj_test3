@@ -1,5 +1,5 @@
 from django.shortcuts import render, redirect
-from django.http import HttpResponse
+from django.http import HttpResponse, JsonResponse
 from django.shortcuts import render_to_response
 
 
@@ -61,3 +61,39 @@ def login_check(request):
 >>> q.get('a')
 '1'
 '''
+
+
+#
+def ajax_test(request):
+    # 显示Ajax页面
+    return render(request, 'booktest/test_ajax.html')
+
+
+def ajax_handle(request):
+    # ajax请求处理
+    # 返回json数据 {'res':1}
+    # JsonResponse对象会把这个转化成Json数据返回给浏览器，由function(data)接受
+    return JsonResponse({'res': 1})
+
+
+# /login_ajax
+def login_ajax(request):
+    # 显示Ajax登录页面
+    return render(request, 'booktest/login_ajax.html')
+
+
+# /login_ajax_check
+def login_ajax_check(request):
+    # ajax 登录校验
+    # 1 获取有用户名密码
+    username = request.POST.get('username')
+    password = request.POST.get('password')
+    # 2 进行校验，返回json数据
+    if username == 'huxf' and password == '666':
+        # correct
+        return JsonResponse({'res': 1})
+        # Ajax请求在后台，不哟啊返回页面或者重定向
+        # return redirect("/index")
+    else:
+        # 用户名或密码错误
+        return JsonResponse({'res': 0})
