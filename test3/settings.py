@@ -35,7 +35,7 @@ INSTALLED_APPS = (
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'testbook',  # 注册应用
+    'booktest',  # 注册应用
 )
 
 MIDDLEWARE_CLASSES = (
@@ -75,7 +75,7 @@ WSGI_APPLICATION = 'test3.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'bj18',
+        'NAME': 'dj18',
         'USER': 'huxf',
         'PASSWORD': 'Root1',
         'HOST': 'localhost',
