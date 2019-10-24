@@ -1,6 +1,7 @@
 from django.shortcuts import render, redirect
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import render_to_response
+from datetime import datetime, timedelta
 
 
 # Create your views here.
@@ -27,13 +28,19 @@ def show_args(request, num):
 
 def login(request):
     '''显示登录页面'''
-    # 获取登录cookie username
-    if 'username' in request.COOKIES:
-        # 如果Cookie丽有username，取值，取空
-        username = request.COOKIES['username']
+    # 先判断用户是否登录
+    if request.session.has_key('islogin'):
+        # 用户已经登录，跳转首页
+        return redirect('/index')
     else:
-        username = ''
-    return render(request, 'booktest/login.html', {'username':username})
+        # 用户没有登录
+        # 获取登录cookie username
+        if 'username' in request.COOKIES:
+            # 如果Cookie丽有username，取值，取空
+            username = request.COOKIES['username']
+        else:
+            username = ''
+        return render(request, 'booktest/login.html', {'username': username})
 
 
 def login_check(request):
@@ -54,8 +61,11 @@ def login_check(request):
         # 用户名和密码正确的时候判断是否需要记住户名密码
         response = redirect('/index')  # HttpResponse
         if remember == 'on':
-            response.set_cookie('username', username, max_age=7 * 24 * 3600)
-            # 设置usename过期时间为1周
+            # response.set_cookie('username', username, max_age=7 * 24 * 3600)
+            response.set_cookie('username', username, expires=datetime.now() + timedelta(days=14))
+            # 设置usename过期时间为1周 Set-Cookie: username=hu; expires=Thu, 31-Oct-2019 08:19:29 GMT; Max-Age=604800
+        # 记住用户登录状态
+        request.session['islogin'] = True  # 只要有这个值就说明登录
         return response  # 设置好cookie后再应答
     else:
         # 跳转登录页面
@@ -112,3 +122,33 @@ def login_ajax_check(request):
     else:
         # 用户名或密码错误
         return JsonResponse({'res': 0})
+
+
+# /set_session
+def set_session(request):
+    '''设置session'''
+    request.session['username'] = 'hu'
+    request.session['age'] = 18  # 以键值对的格式写session。
+    request.session.set_expiry(None)
+    return HttpResponse("设置session")
+
+
+'''
+如果value是一个整数，会话将在value秒没有活动后过期。
+如果value为0，那么用户会话的Cookie将在用户的浏览器关闭时过期。
+如果value为None，那么会话永不过期。
+'''
+
+
+# /get_session
+def get_session(request):
+    '''获取session，通过request.session'''
+    username = request.session['username']
+    age = request.session['age']  # 根据键读取值。
+    return HttpResponse(username + ':' + str(age))  # age转换成字符串防止出错
+
+
+def clear_session(request):
+    # request.session.clear()  # 清除所有session，在存储中删除值部分。
+    request.session.flush()  # 清除session数据，在存储中删除session的整条数据。
+    return HttpResponse('清除session成功')
