@@ -26,7 +26,14 @@ def show_args(request, num):
 
 
 def login(request):
-    return render(request, 'booktest/login.html')
+    '''显示登录页面'''
+    # 获取登录cookie username
+    if 'username' in request.COOKIES:
+        # 如果Cookie丽有username，取值，取空
+        username = request.COOKIES['username']
+    else:
+        username = ''
+    return render(request, 'booktest/login.html', {'username':username})
 
 
 def login_check(request):
@@ -38,11 +45,18 @@ def login_check(request):
 
     username = request.POST.get('username')
     password = request.POST.get('password')  # 有输出
+    remember = request.POST.get('remember')
+    print(remember)
     print(username, password)
     # 2 进行登录的校验。模拟 hu  666
     if username == 'hu' and password == '666':
         # 用户名密码正确，跳转首页
-        return redirect('/index')
+        # 用户名和密码正确的时候判断是否需要记住户名密码
+        response = redirect('/index')  # HttpResponse
+        if remember == 'on':
+            response.set_cookie('username', username, max_age=7 * 24 * 3600)
+            # 设置usename过期时间为1周
+        return response  # 设置好cookie后再应答
     else:
         # 跳转登录页面
         return redirect('/login')
@@ -88,8 +102,9 @@ def login_ajax_check(request):
     # 1 获取有用户名密码
     username = request.POST.get('username')
     password = request.POST.get('password')
+
     # 2 进行校验，返回json数据
-    if username == 'huxf' and password == '666':
+    if username == 'hu' and password == '666':
         # correct
         return JsonResponse({'res': 1})
         # Ajax请求在后台，不哟啊返回页面或者重定向
